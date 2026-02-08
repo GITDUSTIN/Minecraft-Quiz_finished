@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Minecraft Ultimate Quiz - Final Edition</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="icon.png" type="image/png"> 
+  <style>
+    @font-face {
+      font-family: 'MinecraftiaNn';
+      src: url('Minecraftia-Regular.ttf') format('truetype');
+    }
+
+    :root {
+      --theme-color: #fce97e;
+      --theme-rgb: 252, 233, 126;
+      --text-color: #cfcfcf;
+      --card-bg: linear-gradient(145deg, #1a1a1a, #2e2e2e);
+      --btn-bg: linear-gradient(145deg, #3a3a3a, #2e2e2e);
+      --setting-bg: rgba(20, 20, 20, 0.98);
+    }
+
+    body.light-mode {
+      --text-color: #2c2c2c;
+      --card-bg: linear-gradient(145deg, #fdfbf7a2, #f0f0f0);
+      --btn-bg: linear-gradient(145deg, #eee, #ddd);
+      --setting-bg: rgba(253, 251, 247, 0.98);
+    }
+
+    body {
+      margin: 0;
+      font-family: 'MinecraftiaN', sans-serif;
+      background: url('uwp4702799.png') center / cover no-repeat;
+      color: var(--text-color);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      flex-direction: column;
+      transition: all 0.5s ease;
+      overflow: hidden;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 4px solid var(--theme-color);
+      padding: 30px;
+      width: 90%;
+      max-width: 600px;
+      border-radius: 28px;
+      box-shadow: 0 0 50px rgba(0, 0, 0, 0.6);
+      text-align: center;
+      backdrop-filter: blur(15px);
+      z-index: 10;
+      position: relative;
+    }
+
+    .skin-head {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 10px;
+      display: block;
+      image-rendering: pixelated;
+      border: 3px solid var(--theme-color);
+      border-radius: 8px;
+      background: rgba(0, 0, 0, 0.3);
+    }
+
+    .name-input {
+      width: 80%;
+      padding: 12px;
+      margin: 10px 0 20px 0;
+      border-radius: 12px;
+      border: 2px solid var(--theme-color);
+      background: rgba(0, 0, 0, 0.3);
+      color: white;
+      font-family: 'MinecraftiaN', sans-serif;
+      text-align: center;
+    }
+
+    .question {
+      margin: 15px 0;
+      padding: 20px;
+      border-radius: 18px;
+      background: rgba(var(--theme-rgb), 0.1);
+      border: 2px solid var(--theme-color);
+    }
+
+    .answers {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+
+    button {
+      background: var(--btn-bg);
+      border: 2px solid var(--theme-color);
+      color: var(--text-color);
+      padding: 16px;
+      cursor: pointer;
+      border-radius: 15px;
+      font-family: 'MinecraftiaN', sans-serif;
+      font-size: 11px;
+      transition: 0.25s;
+    }
+
+    button:hover:not(:disabled) {
+      background: var(--theme-color);
+      color: #000;
+      transform: translateY(-3px);
+    }
+
+    .btn-correct {
+      background-color: #3fff00 !important;
+      color: #000 !important;
+      border-color: #fff !important;
+    }
+
+    .btn-wrong {
+      background-color: #ff4d4d !important;
+      color: #fff !important;
+      border-color: #fff !important;
+    }
+
+    .xp-particle {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background: radial-gradient(circle, #bfff00, #3fff00);
+      border: 2px solid #1a5a00;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 1000;
+      box-shadow: 0 0 8px #3fff00;
+    }
+
+    /* --- SETTINGS ANIMATIONS --- */
+    .settings-toggle {
+      background: var(--setting-bg);
+      padding: 15px;
+      border: 3px solid var(--theme-color);
+      cursor: pointer;
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      border-radius: 18px;
+      z-index: 10001;
+      font-size: 22px;
+      transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .settings-menu {
+      opacity: 0;
+      visibility: hidden;
+      transform: translateX(-20px);
+      background: var(--setting-bg);
+      padding: 25px;
+      border: 4px solid var(--theme-color);
+      position: fixed;
+      top: 90px;
+      left: 20px;
+      border-radius: 28px;
+      width: 340px;
+      z-index: 10000;
+      transition: all 0.4s ease;
+    }
+
+    .settings-menu.open {
+      opacity: 1;
+      visibility: visible;
+      transform: translateX(0);
+    }
+
+    .setting-row {
+      margin: 4px 0;
+      padding: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: background 0.3s;
+      border-radius: 12px;
+    }
+
+    .setting-row:hover {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .vol-group {
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 18px;
+      padding: 12px;
+      margin: 8px 0;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 6px;
+      background: #333;
+      border-radius: 10px;
+      margin-top: 10px;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      height: 18px;
+      width: 18px;
+      background: #fff;
+      border: 2px solid var(--theme-color);
+      border-radius: 4px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+      box-shadow: 0 0 10px var(--theme-color);
+    }
+
+    .bg-preview {
+      width: 80px;
+      height: 50px;
+      border-radius: 10px;
+      border: 3px solid rgba(255, 255, 255, 0.1);
+      cursor: pointer;
+      object-fit: cover;
+      transition: 0.3s;
+    }
+
+    .bg-preview:hover {
+      transform: scale(1.1);
+      border-color: rgba(255, 255, 255, 0.5);
+    }
+
+    .bg-preview.selected {
+      border-color: var(--theme-color);
+      transform: scale(1.05);
+    }
+
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 44px;
+      height: 22px;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #444;
+      transition: .4s;
+      border-radius: 34px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 16px;
+      width: 16px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+
+    input:checked+.slider {
+      background-color: var(--theme-color);
+    }
+
+    input:checked+.slider:before {
+      transform: translateX(22px);
+    }
+
+    #progress-bar {
+      height: 10px;
+      background: var(--theme-color);
+      width: 0%;
+      transition: 0.5s;
+      border-radius: 10px;
+    }
+
+    .lb-tabs {
+      display: flex;
+      justify-content: center;
+      gap: 5px;
+      margin-top: 25px;
+    }
+
+    .lb-tab {
+      padding: 10px 15px;
+      font-size: 10px;
+      border: 2px solid var(--theme-color);
+      border-bottom: none;
+      border-radius: 12px 12px 0 0;
+      cursor: pointer;
+      background: rgba(0, 0, 0, 0.4);
+      transition: 0.3s;
+    }
+
+    .lb-tab.active {
+      background: var(--theme-color);
+      color: #000;
+    }
+
+    .leaderboard {
+      text-align: left;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 15px;
+      border-radius: 0 0 18px 18px;
+      max-height: 160px;
+      overflow-y: auto;
+      border: 2px solid var(--theme-color);
+    }
+
+    .leaderboard-entry {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 5px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      font-size: 11px;
+    }
+
+    .lb-head {
+      width: 16px;
+      height: 16px;
+      margin-right: 8px;
+      image-rendering: pixelated;
+      border: 1px solid var(--theme-color);
+    }
+  </style>
+</head>
+
+<body>
+
+  <audio id="music" loop>
+    <source src="tatamusic-game-gaming-minecraft-background-music-377647.mp3" type="audio/mpeg">
+  </audio>
+  <audio id="correctSound">
+    <source src="correct.ogg" type="audio/ogg">
+  </audio>
+  <audio id="wrongSound">
+    <source src="false.mp3" type="audio/mpeg">
+  </audio>
+
+  <div class="card" id="levelCard">
+    <h1>⛏️ Minecraft Quiz</h1>
+    <img id="skinPreview" class="skin-head" src="https://minotar.net/helm/Steve/64.png">
+    <input type="text" id="playerName" class="name-input" placeholder="Dein Name..." maxlength="15"
+      oninput="updateSkin(this.value)">
+    <div style="display:flex; gap:10px; justify-content:center; flex-wrap: wrap;">
+      <button onclick="startQuiz('easy')">Einsteiger</button>
+      <button onclick="startQuiz('medium')">Profi</button>
+      <button onclick="startQuiz('hard')">Experte</button>
+    </div>
+    <div class="lb-tabs">
+      <div class="lb-tab active" id="tab-easy" onclick="switchLB('easy')">Easy</div>
+      <div class="lb-tab" id="tab-medium" onclick="switchLB('medium')">Medium</div>
+      <div class="lb-tab" id="tab-hard" onclick="switchLB('hard')">Hard</div>
+    </div>
+    <div id="leaderboardList" class="leaderboard"></div>
+  </div>
+
+  <div class="card" id="quizCard" style="display:none;">
+    <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 10px;">
+      <img id="activeHead" class="lb-head" style="width: 24px; height: 24px;">
+      <div id="activePlayer" style="color:var(--theme-color); font-size: 11px;"></div>
+    </div>
+    <div style="background:rgba(0,0,0,0.3); border-radius:10px; margin-bottom:20px;">
+      <div id="progress-bar"></div>
+    </div>
+    <div id="timer" style="font-size: 18px;">⏱️ 15s</div>
+    <div id="question" class="question"></div>
+    <div id="answers" class="answers"></div>
+  </div>
+
+  <div class="card" id="resultCard" style="display:none;">
+    <h2>Abgeschlossen!</h2>
+    <img id="finalHead" class="skin-head" src="">
+    <div id="finalScoreDisplay" style="font-size: 44px; color: var(--theme-color); margin: 20px 0;">0/10</div>
+    <button onclick="location.reload()" style="width:100%;">Hauptmenue</button>
+  </div>
+
+  <div class="settings-toggle" id="gearBtn">⚙️</div>
+  <div class="settings-menu" id="settingsMenu">
+    <h3 style="text-align:center; font-size: 14px;">EINSTELLUNGEN</h3>
+
+    <div class="setting-row"><span>☀️ Heller Modus</span><label class="switch"><input type="checkbox"
+          onchange="document.body.classList.toggle('light-mode')"><span class="slider"></span></label></div>
+    <div class="setting-row"><span>⏱️ Timer Aktiv</span><label class="switch"><input type="checkbox" id="timerCheck"
+          checked><span class="slider"></span></label></div>
+    <div class="setting-row"><span>✨ Animationen</span><label class="switch"><input type="checkbox" id="animToggle"
+          checked><span class="slider"></span></label></div>
+
+    <div class="vol-group">
+      <div class="setting-row" style="padding:0;"><span>🎵 Musik</span><label class="switch"><input type="checkbox"
+            id="musicToggle" onchange="toggleMusic()"><span class="slider"></span></label></div>
+      <input type="range" id="musVol" min="0" max="1" step="0.01" value="0.4" oninput="updateMusicVol(this)">
+    </div>
+
+    <div class="vol-group">
+      <div class="setting-row" style="padding:0;"><span>🔊 Effekte</span><label class="switch"><input type="checkbox"
+            id="sfxToggle" checked><span class="slider"></span></label></div>
+      <input type="range" id="effVol" min="0" max="1" step="0.01" value="0.6" oninput="updateEffectsVol(this)">
+    </div>
+
+    <div style="text-align:center; margin-top:15px; display: flex; justify-content: center; gap: 10px;">
+      <img class="bg-preview selected" src="uwp4702799.png" onclick="changeBG('uwp4702799.png', '#fce97e', this)">
+      <img class="bg-preview" src="nether.png" onclick="changeBG('nether.png', '#ff4d4d', this)">
+      <img class="bg-preview" src="end.png" onclick="changeBG('end.png', '#d24dff', this)">
+    </div>
+  </div>
+
+  <script>
+    const gearBtn = document.getElementById('gearBtn');
+    const settingsMenu = document.getElementById('settingsMenu');
+
+    gearBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isOpen = settingsMenu.classList.toggle('open');
+      gearBtn.style.transform = isOpen ? 'rotate(180deg)' : 'rotate(0deg)';
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!settingsMenu.contains(e.target) && e.target !== gearBtn) {
+        settingsMenu.classList.remove('open');
+        gearBtn.style.transform = 'rotate(0deg)';
+      }
+    });
+
+    const questions = {
+      easy: [
+        { q: "Welcher Mob explodiert?", a: ["Creeper", "Zombie", "Kuh", "Schaf"], c: "Creeper" },
+        { q: "Woraus macht man Brot?", a: ["Weizen", "Zucker", "Stein", "Holz"], c: "Weizen" },
+        { q: "Was essen Schweine?", a: ["Karotten", "Fisch", "Gold", "Eier"], c: "Karotten" },
+        { q: "Wo schläft man?", a: ["Bett", "Ofen", "Truhe", "Boot"], c: "Bett" },
+        { q: "Standard-Skin Name?", a: ["Steve", "Alex", "Herobrine", "Notch"], c: "Steve" },
+        { q: "Tier gibt Milch?", a: ["Kuh", "Schwein", "Hund", "Huhn"], c: "Kuh" },
+        { q: "Was droppt ein Skelett?", a: ["Knochen", "Faden", "Leder", "Gold"], c: "Knochen" },
+        { q: "Woraus macht man Glas?", a: ["Sand", "Kies", "Erde", "Stein"], c: "Sand" },
+        { q: "Farbe Lapis?", a: ["Blau", "Grün", "Rot", "Gelb"], c: "Blau" },
+        { q: "Stöcke + Kohle ergeben?", a: ["Fackeln", "Brot", "Bogen", "Glas"], c: "Fackeln" },
+        { q: "Heimat des Enderdrachen?", a: ["Ende", "Nether", "Welt", "Mine"], c: "Ende" },
+        { q: "Schwerkraft-Block?", a: ["Sand", "Holz", "Stein", "Glas"], c: "Sand" },
+        { q: "Schnellstes Werkzeug Holz?", a: ["Axt", "Picke", "Spaten", "Hand"], c: "Axt" },
+        { q: "Lava-Kontakt?", a: ["Brennen", "Heilen", "Nichts", "Frieren"], c: "Brennen" },
+        { q: "Wertvollstes Erz?", a: ["Diamant", "Kohle", "Kupfer", "Eisen"], c: "Diamant" }
+      ],
+      medium: [
+        { q: "Lava + Wasser?", a: ["Obsidian", "Stein", "Sand", "Eis"], c: "Obsidian" },
+        { q: "Wolf-Zähmung?", a: ["Knochen", "Fisch", "Fleisch", "Apfel"], c: "Knochen" },
+        { q: "Creeper-Angst?", a: ["Katzen", "Hunde", "Spinnen", "Skelette"], c: "Katzen" },
+        { q: "Villager-Geld?", a: ["Smaragd", "Gold", "Diamant", "Eisen"], c: "Smaragd" },
+        { q: "Wer droppt Perlen?", a: ["Enderman", "Zombie", "Blaze", "Slime"], c: "Enderman" },
+        { q: "Full Armor Kosten?", a: ["24", "22", "26", "20"], c: "24" },
+        { q: "Block gegen Endermen?", a: ["Kürbis", "Helm", "Glas", "Laub"], c: "Kürbis" },
+        { q: "Netherportal Mindestanzahl?", a: ["10", "12", "8", "14"], c: "10" },
+        { q: "Blitz auf Schwein?", a: ["Pigman", "Tod", "Super", "Nichts"], c: "Pigman" },
+        { q: "Bestes Essen?", a: ["Steak", "Apfel", "Keks", "Brot"], c: "Steak" },
+        { q: "Elytren-Fundort?", a: ["Endschiff", "Festung", "Dungeon", "Wüste"], c: "Endschiff" },
+        { q: "Beste Picke Obsidian?", a: ["Diamant", "Eisen", "Stein", "Gold"], c: "Diamant" },
+        { q: "Hühner-Lockmittel?", a: ["Samen", "Weizen", "Karotten", "Äpfel"], c: "Samen" },
+        { q: "Bogen-Rezept?", a: ["Stöcke/Fäden", "Holz/Eisen", "Stöcke/Leder", "Gold"], c: "Stöcke/Fäden" },
+        { q: "Trank der Schwäche Basis?", a: ["Ferment. Auge", "Warze", "Zucker", "Pulver"], c: "Ferment. Auge" }
+      ],
+      hard: [
+        { q: "Ticks pro Sekunde?", a: ["20", "10", "60", "5"], c: "20" },
+        { q: "Signalstärke Max?", a: ["15", "16", "14", "12"], c: "15" },
+        { q: "Lichtlevel Spawn 1.18?", a: ["0", "7", "1", "15"], c: "0" },
+        { q: "Drachen HP?", a: ["200", "100", "300", "500"], c: "200" },
+        { q: "Wither Drop?", a: ["Netherstern", "Ei", "Beacon", "Smaragd"], c: "Netherstern" },
+        { q: "Spielerhöhe?", a: ["1.8", "2.0", "1.7", "1.9"], c: "1.8" },
+        { q: "Piston Max Blöcke?", a: ["12", "15", "10", "16"], c: "12" },
+        { q: "Blumen-Richtung?", a: ["Osten", "Westen", "Norden", "Süden"], c: "Osten" },
+        { q: "Notch-Todesdrop?", a: ["Apfel", "Gold", "Keks", "Nichts"], c: "Apfel" },
+        { q: "Fehler-Mob?", a: ["Creeper", "Ghast", "Phantom", "Warden"], c: "Creeper" },
+        { q: "HP Wither (Java)?", a: ["300", "200", "400", "150"], c: "300" },
+        { q: "Phantom Spawn (Tage)?", a: ["3", "1", "5", "7"], c: "3" },
+        { q: "1:1 Land-Nachbau?", a: ["Dänemark", "Schweden", "USA", "DE"], c: "Dänemark" },
+        { q: "Heilung + Auge?", a: ["Schaden", "Schwäche", "Gift", "Slowness"], c: "Schaden" },
+        { q: "Schatzkisten-Garantie?", a: ["Herz", "Diamant", "Gold", "Sattel"], c: "Herz" }
+      ]
+    };
+
+    let currentLevel = 'easy', currentQuiz = [], i = 0, score = 0, timer, timeLeft = 15, userNick = '', canClick = true, skinTimeout;
+
+    function updateSkin(name) {
+      clearTimeout(skinTimeout);
+      skinTimeout = setTimeout(() => {
+        document.getElementById('skinPreview').src = `https://minotar.net/helm/${name.trim() || 'Steve'}/64.png`;
+      }, 500);
+    }
+
+    function startQuiz(lvl) {
+      userNick = document.getElementById('playerName').value.trim();
+      if (!userNick) return alert("Namen eingeben!");
+      currentLevel = lvl;
+      document.getElementById('activePlayer').textContent = `SPIELER: ${userNick}`;
+      document.getElementById('activeHead').src = `https://minotar.net/helm/${userNick}/32.png`;
+      currentQuiz = [...questions[lvl]].sort(() => Math.random() - 0.5).slice(0, 10);
+      document.getElementById('levelCard').style.display = 'none';
+      document.getElementById('quizCard').style.display = 'block';
+      i = 0; score = 0; loadQ();
+    }
+
+    function loadQ() {
+      if (i >= currentQuiz.length) return finish();
+      canClick = true; const qObj = currentQuiz[i];
+      document.getElementById('question').textContent = qObj.q;
+      document.getElementById('progress-bar').style.width = (i / currentQuiz.length * 100) + "%";
+      const box = document.getElementById('answers'); box.innerHTML = '';
+      [...qObj.a].sort(() => Math.random() - 0.5).forEach(text => {
+        const b = document.createElement('button'); b.textContent = text;
+        b.onclick = (e) => check(text, qObj.c, b, e); box.appendChild(b);
+      });
+      timeLeft = 15; if (document.getElementById('timerCheck').checked) startTimer();
+    }
+
+    function startTimer() {
+      clearInterval(timer);
+      timer = setInterval(() => {
+        timeLeft--; document.getElementById('timer').textContent = `⏱️ ${timeLeft}s`;
+        if (timeLeft <= 0) check("TIME", "---", null, null);
+      }, 1000);
+    }
+
+    function check(sel, cor, btn, event) {
+      if (!canClick) return; canClick = false; clearInterval(timer);
+      const isCorrect = (sel === cor);
+      if (isCorrect) score++;
+      if (btn && document.getElementById('animToggle').checked) {
+        btn.classList.add(isCorrect ? 'btn-correct' : 'btn-wrong');
+        if (isCorrect) createXP(event.clientX, event.clientY);
+      }
+      if (document.getElementById('sfxToggle').checked) document.getElementById(isCorrect ? 'correctSound' : 'wrongSound').play().catch(() => { });
+      i++; setTimeout(loadQ, 1000);
+    }
+
+    function createXP(x, y) {
+      for (let k = 0; k < 15; k++) {
+        const orb = document.createElement('div'); orb.className = 'xp-particle';
+        orb.style.left = x + 'px'; orb.style.top = y + 'px'; document.body.appendChild(orb);
+        const angle = Math.random() * Math.PI * 2, vel = Math.random() * 8 + 4;
+        let vx = Math.cos(angle) * vel, vy = Math.sin(angle) * vel, op = 1;
+        const move = setInterval(() => {
+          vx *= 0.95; vy += 0.3; orb.style.left = (parseFloat(orb.style.left) + vx) + 'px';
+          orb.style.top = (parseFloat(orb.style.top) + vy) + 'px'; op -= 0.02; orb.style.opacity = op;
+          if (op <= 0) { clearInterval(move); orb.remove(); }
+        }, 20);
+      }
+    }
+
+    function finish() {
+      document.getElementById('quizCard').style.display = 'none';
+      document.getElementById('resultCard').style.display = 'block';
+      document.getElementById('finalHead').src = `https://minotar.net/helm/${userNick}/64.png`;
+      document.getElementById('finalScoreDisplay').textContent = `${score}/${currentQuiz.length}`;
+      let lb = JSON.parse(localStorage.getItem('mc_lb_' + currentLevel) || '[]');
+      const exIdx = lb.findIndex(e => e.name.toLowerCase() === userNick.toLowerCase());
+      if (exIdx !== -1) { if (score >= lb[exIdx].pts) lb[exIdx].pts = score; } else { lb.push({ name: userNick, pts: score }); }
+      lb.sort((a, b) => b.pts - a.pts);
+      localStorage.setItem('mc_lb_' + currentLevel, JSON.stringify(lb.slice(0, 10)));
+    }
+
+    function updateMusicVol(el) { document.getElementById('music').volume = el.value; }
+    function updateEffectsVol(el) { document.getElementById('correctSound').volume = el.value; document.getElementById('wrongSound').volume = el.value; }
+    function toggleMusic() { if (document.getElementById('musicToggle').checked) document.getElementById('music').play(); else document.getElementById('music').pause(); }
+
+    function changeBG(img, color, el) {
+      document.body.style.background = `url('${img}') center / cover no-repeat`;
+      document.documentElement.style.setProperty('--theme-color', color);
+      document.querySelectorAll('.bg-preview').forEach(p => p.classList.remove('selected'));
+      el.classList.add('selected');
+    }
+
+    function switchLB(lvl) {
+      currentLevel = lvl;
+      document.querySelectorAll('.lb-tab').forEach(t => t.classList.remove('active'));
+      document.getElementById('tab-' + lvl).classList.add('active');
+      showLeaderboard(lvl);
+    }
+    function showLeaderboard(lvl) {
+      const lb = JSON.parse(localStorage.getItem('mc_lb_' + lvl) || '[]');
+      const list = document.getElementById('leaderboardList');
+      list.innerHTML = lb.length ? '' : '<p style="text-align:center;opacity:0.5;font-size:9px;">Keine Eintraege</p>';
+      lb.forEach((e, idx) => {
+        list.innerHTML += `<div class="leaderboard-entry"><span><img class="lb-head" src="https://minotar.net/helm/${e.name}/16.png">#${idx + 1} ${e.name}</span><span>${e.pts} Pkt</span></div>`;
+      });
+    }
+    showLeaderboard('easy');
+  </script>
+</body>
+
+</html>
